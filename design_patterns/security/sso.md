@@ -203,8 +203,9 @@ graph TD
     IdP -->|5 - Validation Response| App
     App -->|6 - Access Granted/Denied| User
     DataStore[User Data Store] -->|7 - User Data| IdP
+    IdP ---|Trust Relationship| App
 ```
-**Description**: The user initiates authentication with IdP, receives a response, and uses it to access the app. The app validates tokens with IdP before granting access. User data is sourced from a secure data store.
+**Description**: The user initiates authentication with IdP, receives a response, and uses it to access the app. The app validates tokens with IdP before granting access. User data is sourced from a secure data store. A trust relationship exists between the IdP and the Web App/SaaS, established through mechanisms such as mutual authentication, shared certificates, or metadata exchange (e.g., SAML metadata or OIDC discovery), ensuring secure communication and validation of authentication assertions or tokens.
 
 #### Threat Analysis with STRIDE
 | **Category**      | **Threat**                                                                 | **Mitigation (Control)**                                                                                     | **Implementing Party** |
@@ -242,7 +243,7 @@ graph TD
 |                   |                                                                           | C031. Use Web Application Firewalls (WAF) to filter malicious traffic.                                        | Security Team           |
 |                   |                                                                           | C032. Design apps with horizontal scaling to absorb traffic spikes.                                            | App Team & Infrastructure Team |
 |                   |                                                                           | C033. Monitor app performance for early detection of DoS patterns.                                             | App Team & Monitoring Team |
-| **Elevation of Privilege** | Attacker gains unauthorized access via stolen token.            | C034. Use short token lifetimes (e.g., 5-15 minutes for access tokens) with automatic refresh mechanisms.      | App Team                |
+| **Elevation of Privilege** | Attacker gains unauthorized access via stolen token.            | C034. Use short token lifetimes (default of 10 minutes for access tokens as per Token Lifetime Management control) with automatic refresh mechanisms to minimize exposure if stolen.      | App Team                |
 |                   |                                                                           | C035. Store tokens securely using HttpOnly, Secure cookies to prevent client-side access.                      | App Team                |
 |                   |                                                                           | C036. Implement immediate session invalidation on logout or suspicious activity detection.                     | App Team                |
 |                   |                                                                           | C037. Use token binding to tie tokens to specific client sessions or devices.                                  | App Team                |
