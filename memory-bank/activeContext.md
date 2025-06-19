@@ -20,7 +20,7 @@
 ## Important Patterns and Preferences
 - Use Markdown for all documentation to ensure readability and ease of updates.
 - Maintain a clear hierarchy in documentation to reflect project structure and priorities.
-- Avoid using colons in Mermaid diagram descriptions to prevent "Unsupported markdown: list" errors; use hyphens or other separators instead.
+- Avoid using colons and periods in Mermaid diagram descriptions to prevent "Unsupported markdown: list" errors; use hyphens or other separators instead.
 
 ## Learnings and Project Insights
 - Consistent documentation is critical for project continuity given memory resets.

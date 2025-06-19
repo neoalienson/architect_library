@@ -17,11 +17,11 @@ This document covers the design and implementation of SSO for internal users acc
 #### Logical Diagram
 ```mermaid
 graph TD
-    User[User] -->|1. Access Request| App[Web Application]
-    App -->|2. Redirect to IdP for Authentication| IdP[Internal IdP]
-    User -->|3. Authenticate| IdP
-    IdP -->|4. SAML Assertion| App
-    App -->|5. Grant Access| User
+    User[User] -->|1 - Access Request| App[Web Application]
+    App -->|2 - Redirect to IdP for Authentication| IdP[Internal IdP]
+    User -->|3 - Authenticate| IdP
+    IdP -->|4 - SAML Assertion| App
+    App -->|5 - Grant Access| User
 ```
 **Description**: The user attempts to access a web application, which redirects them to the internal IdP. After successful authentication, the IdP sends a SAML assertion to the application, granting access to the user.
 
@@ -53,14 +53,14 @@ Web applications need to provide the following to the IdP for integration:
 #### Logical Diagram
 ```mermaid
 graph TD
-    User[User] -->|1. Access Request| App[Web Application]
-    App -->|2. Redirect to IdP for Authentication| IdP[Internal IdP]
-    User -->|3. Authenticate| IdP
-    IdP -->|4. Authorization Code| User
-    User -->|5. Code to App| App
-    App -->|6. Exchange Code for Token| IdP
-    IdP -->|7. ID Token & Access Token| App
-    App -->|8. Grant Access| User
+    User[User] -->|1 - Access Request| App[Web Application]
+    App -->|2 - Redirect to IdP for Authentication| IdP[Internal IdP]
+    User -->|3 - Authenticate| IdP
+    IdP -->|4 - Authorization Code| User
+    User -->|5 - Code to App| App
+    App -->|6 - Exchange Code for Token| IdP
+    IdP -->|7 - ID Token and Access Token| App
+    App -->|8 - Grant Access| User
 ```
 **Description**: The user accesses a web application, which redirects to the IdP. After authentication, an authorization code is returned to the user, forwarded to the app, and exchanged for ID and access tokens via OIDC, granting access.
 
@@ -91,11 +91,11 @@ graph TD
 #### Logical Diagram
 ```mermaid
 graph TD
-    User[User] -->|1. Access Request| SaaS[SaaS Application]
-    SaaS -->|2. Redirect to IdP for Authentication| IdP[Internal IdP]
-    User -->|3. Authenticate| IdP
-    IdP -->|4. SAML Assertion| SaaS
-    SaaS -->|5. Grant Access| User
+    User[User] -->|1 - Access Request| SaaS[SaaS Application]
+    SaaS -->|2 - Redirect to IdP for Authentication| IdP[Internal IdP]
+    User -->|3 - Authenticate| IdP
+    IdP -->|4 - SAML Assertion| SaaS
+    SaaS -->|5 - Grant Access| User
 ```
 **Description**: The user attempts to access a SaaS application, which redirects to the internal IdP. Post-authentication, a SAML assertion is sent to the SaaS, granting access.
 
@@ -164,13 +164,13 @@ flowchart TD
 #### Data Flow Diagram
 ```mermaid
 graph TD
-    User[User] -->|1. Authentication Request| IdP[IdP]
-    IdP -->|2. Authentication Response| User
-    User -->|3. Access Request with Token| App[Web App/SaaS]
-    App -->|4. Token Validation| IdP
-    IdP -->|5. Validation Response| App
-    App -->|6. Access Granted/Denied| User
-    DataStore[User Data Store] -->|7. User Data| IdP
+    User[User] -->|1 - Authentication Request| IdP[IdP]
+    IdP -->|2 - Authentication Response| User
+    User -->|3 - Access Request with Token| App[Web App/SaaS]
+    App -->|4 - Token Validation| IdP
+    IdP -->|5 - Validation Response| App
+    App -->|6 - Access Granted/Denied| User
+    DataStore[User Data Store] -->|7 - User Data| IdP
 ```
 **Description**: The user initiates authentication with IdP, receives a response, and uses it to access the app. The app validates tokens with IdP before granting access. User data is sourced from a secure data store.
 
