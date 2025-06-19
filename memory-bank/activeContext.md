@@ -18,6 +18,8 @@
 ## Active Decisions and Considerations
 - How to structure additional context files for complex features and integrations.
 - Determining the frequency and triggers for Memory Bank updates.
+- Key assumption: User's PC has a web browser to access web applications, which is essential for SAML and OIDC authentication flows that rely on browser redirects.
+- Key assumption: Users access Internet applications or SaaS through an outgoing proxy that blocks blacklisted websites based on threat intelligence, enhancing security for external communications.
 
 ## Important Patterns and Preferences
 - Use Markdown for all documentation to ensure readability and ease of updates.

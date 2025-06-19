@@ -18,26 +18,27 @@ This document covers the design and implementation of SSO for internal users acc
 ```mermaid
 graph TD
     User[User] -->|1 - Access Request| App[Web Application]
-    App -->|2 - Redirect to IdP for Authentication| IdP[Internal IdP]
-    User -->|3 - Authenticate| IdP
-    IdP -->|4 - SAML Assertion| App
-    App -->|5 - Grant Access| User
+    App -->|2 - Redirect to IdP for Authentication| User
+    User -->|3 - Authenticate| IdP[Internal IdP]
+    IdP -->|4 - SAML Assertion via Browser Redirect| User
+    User -->|5 - Assertion to App via Browser| App
+    App -->|6 - Grant Access| User
 ```
-**Description**: The user attempts to access a web application, which redirects them to the internal IdP. After successful authentication, the IdP sends a SAML assertion to the application, granting access to the user.
+**Description**: The user attempts to access a web application, which redirects them to the internal IdP via the browser. After successful authentication, the IdP sends a SAML assertion back through the user's browser, which is then forwarded to the application via a browser redirect. The application then grants access to the user.
 
 #### Physical Diagram
 ```mermaid
 graph TD
     UserPC[User PC] -->|HTTPS| Firewall1[Firewall]
     Firewall1 -->|HTTPS| AppServer[Web App Server]
-    AppServer -->|HTTPS| Firewall2[Firewall]
-    Firewall2 -->|HTTPS| IdPServer[IdP Server]
+    AppServer -->|Redirect via Browser| UserPC
     UserPC -->|HTTPS| Firewall3[Firewall]
-    Firewall3 -->|HTTPS| IdPServer
-    IdPServer -->|SAML over HTTPS| Firewall2
-    Firewall2 -->|SAML over HTTPS| AppServer
+    Firewall3 -->|HTTPS| IdPServer[IdP Server]
+    IdPServer -->|SAML Assertion via HTTPS Redirect| UserPC
+    UserPC -->|Assertion via HTTPS| Firewall1
+    Firewall1 -->|Assertion via HTTPS| AppServer
 ```
-**Description**: The user's PC communicates through a firewall to reach the web application server within the trusted internal zone, which then communicates through another firewall to the IdP server for authentication due to micro-segmentation. SAML assertions are exchanged securely over HTTPS through the firewalls. Firewalls exist between the user and web application, and between the web application and IdP to enforce security boundaries within the internal network.
+**Description**: The user's PC communicates through a firewall to reach the web application server within the trusted internal zone, which redirects the browser back to the user to access the IdP server through another firewall for authentication due to micro-segmentation. After authentication, the IdP sends the SAML assertion back through the user's browser via HTTPS redirect, which is then forwarded to the web application server through the firewall. Firewalls exist between the user and web application, and between the user and IdP to enforce security boundaries within the internal network.
 
 #### Firewall Rule
 - **User to Web App Rule**: Allow HTTPS (port 443) traffic from User PC through Firewall to Web App Server.
@@ -111,19 +112,21 @@ graph TD
 ```mermaid
 graph TD
     UserPC[User PC] -->|HTTPS| Firewall[Firewall]
-    Firewall -->|HTTPS| Internet[Internet]
+    Firewall -->|HTTPS| Proxy[Outgoing Proxy]
+    Proxy -->|HTTPS| Internet[Internet]
     Internet -->|HTTPS| SaaSServer[SaaS Server]
     SaaSServer -->|HTTPS| IdPServer[IdP Server via VPN or Public Endpoint]
     UserPC -->|HTTPS| IdPServer
     IdPServer -->|SAML over HTTPS| SaaSServer
 ```
-**Description**: User traffic goes through the firewall to the Internet, crossing from the trusted internal zone to the untrusted Internet zone, reaching the SaaS server. The SaaS server communicates with the internal IdP (via VPN or public endpoint) for SAML-based authentication. The firewall marks the boundary between trusted and untrusted zones.
+**Description**: User traffic goes through the firewall and an outgoing proxy to the Internet, crossing from the trusted internal zone to the untrusted Internet zone, reaching the SaaS server. The outgoing proxy blocks blacklisted websites based on threat intelligence, enhancing security. The SaaS server communicates with the internal IdP (via VPN or public endpoint) for SAML-based authentication. The firewall and proxy mark the boundary between trusted and untrusted zones.
 
 #### Firewall Rule
-- **Inbound Rule**: Allow HTTPS (port 443) traffic from User PC through Firewall to Internet for SaaS access and direct to IdP Server within internal zone.
-- **Outbound Rule**: Allow HTTPS (port 443) traffic through Firewall to SaaS Server and from SaaS Server to IdP Server (if public endpoint used).
-- **VPN Consideration**: If IdP is not publicly accessible, ensure VPN tunnel allows SaaS to IdP communication through the firewall.
-- **Purpose**: Facilitates secure access to external SaaS by enforcing security at the boundary between trusted internal and untrusted Internet zones while protecting internal IdP communications.
+- **Inbound Rule**: Allow HTTPS (port 443) traffic from User PC through Firewall and Outgoing Proxy to Internet for SaaS access and direct to IdP Server within internal zone.
+- **Outbound Rule**: Allow HTTPS (port 443) traffic through Firewall and Outgoing Proxy to SaaS Server and from SaaS Server to IdP Server (if public endpoint used).
+- **Proxy Rule**: Outgoing Proxy blocks blacklisted websites based on threat intelligence to prevent access to malicious or unauthorized domains.
+- **VPN Consideration**: If IdP is not publicly accessible, ensure VPN tunnel allows SaaS to IdP communication through the firewall and proxy.
+- **Purpose**: Facilitates secure access to external SaaS by enforcing security at the boundary between trusted internal and untrusted Internet zones through firewall and proxy controls, while protecting internal IdP communications and blocking access to known threats.
 
 #### Onboarding Information
 - **Entity ID**: Unique identifier for the SaaS SP.
@@ -167,6 +170,7 @@ flowchart TD
 3. **Network Access**: Users' PCs have network access to the IdP, with data in transit protected by TLS 1.2 or above using private CA-signed certificates.
 4. **Application Access**: Users' PCs have network access to the web application or SaaS endpoints.
 5. **Enterprise Environment**: Assumes an enterprise setup with managed IdP and controlled network environments.
+6. **SAML Version**: The SAML implementation used is SAML 2.0, which is the current standard for web browser SSO profiles.
 
 ### Threat Modeling
 #### Data Flow Diagram
