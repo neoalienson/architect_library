@@ -7,6 +7,8 @@
 ## Recent Changes
 - Created foundational Memory Bank files including 'projectbrief.md' and 'productContext.md'.
 - Setting up documentation workflows to maintain project context.
+- Updated 'design_patterns/security/sso.md' to reflect network architecture: no firewall between user and internal web applications (trusted internal zone), and a firewall between user PC and SaaS on the Internet (boundary between trusted internal and untrusted Internet zones).
+- Further updated 'design_patterns/security/sso.md' to include firewalls between user and web application, and between IdP and web application for micro-segmentation within the internal network.
 
 ## Next Steps
 - Complete the creation of remaining core Memory Bank files.

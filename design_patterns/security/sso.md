@@ -28,18 +28,22 @@ graph TD
 #### Physical Diagram
 ```mermaid
 graph TD
-    UserPC[User PC] -->|HTTPS| Firewall[Firewall]
-    Firewall -->|HTTPS| AppServer[Web App Server]
-    AppServer -->|HTTPS| IdPServer[IdP Server]
-    UserPC -->|HTTPS| IdPServer
-    IdPServer -->|SAML over HTTPS| AppServer
+    UserPC[User PC] -->|HTTPS| Firewall1[Firewall]
+    Firewall1 -->|HTTPS| AppServer[Web App Server]
+    AppServer -->|HTTPS| Firewall2[Firewall]
+    Firewall2 -->|HTTPS| IdPServer[IdP Server]
+    UserPC -->|HTTPS| Firewall3[Firewall]
+    Firewall3 -->|HTTPS| IdPServer
+    IdPServer -->|SAML over HTTPS| Firewall2
+    Firewall2 -->|SAML over HTTPS| AppServer
 ```
-**Description**: The user's PC communicates through a firewall to reach the web application server, which redirects to the IdP server for authentication. SAML assertions are exchanged securely over HTTPS.
+**Description**: The user's PC communicates through a firewall to reach the web application server within the trusted internal zone, which then communicates through another firewall to the IdP server for authentication due to micro-segmentation. SAML assertions are exchanged securely over HTTPS through the firewalls. Firewalls exist between the user and web application, and between the web application and IdP to enforce security boundaries within the internal network.
 
 #### Firewall Rule
-- **Inbound Rule**: Allow HTTPS (port 443) traffic from User PC to Web App Server and IdP Server.
-- **Outbound Rule**: Allow HTTPS (port 443) traffic from Web App Server to IdP Server for SAML assertion exchange.
-- **Purpose**: Ensures secure communication channels for authentication requests and responses while restricting unauthorized access.
+- **User to Web App Rule**: Allow HTTPS (port 443) traffic from User PC through Firewall to Web App Server.
+- **Web App to IdP Rule**: Allow HTTPS (port 443) traffic from Web App Server through Firewall to IdP Server for SAML assertion exchange.
+- **User to IdP Rule**: Allow HTTPS (port 443) traffic from User PC through Firewall to IdP Server for direct authentication.
+- **Purpose**: Enforces micro-segmentation within the internal network to enhance security by controlling traffic between different segments, even within the trusted zone.
 
 #### Onboarding Information
 Web applications need to provide the following to the IdP for integration:
@@ -67,18 +71,22 @@ graph TD
 #### Physical Diagram
 ```mermaid
 graph TD
-    UserPC[User PC] -->|HTTPS| Firewall[Firewall]
-    Firewall -->|HTTPS| AppServer[Web App Server]
-    AppServer -->|HTTPS| IdPServer[IdP Server]
-    UserPC -->|HTTPS| IdPServer
-    IdPServer -->|OIDC over HTTPS| AppServer
+    UserPC[User PC] -->|HTTPS| Firewall1[Firewall]
+    Firewall1 -->|HTTPS| AppServer[Web App Server]
+    AppServer -->|HTTPS| Firewall2[Firewall]
+    Firewall2 -->|HTTPS| IdPServer[IdP Server]
+    UserPC -->|HTTPS| Firewall3[Firewall]
+    Firewall3 -->|HTTPS| IdPServer
+    IdPServer -->|OIDC over HTTPS| Firewall2
+    Firewall2 -->|OIDC over HTTPS| AppServer
 ```
-**Description**: Similar to SAML, but using OIDC protocol for token exchange over HTTPS through the firewall.
+**Description**: Similar to SAML, the user's PC communicates through a firewall to reach the web application server within the trusted internal zone, which then communicates through another firewall to the IdP server for authentication due to micro-segmentation. OIDC token exchange occurs securely over HTTPS through the firewalls. Firewalls exist between the user and web application, and between the web application and IdP to enforce security boundaries within the internal network.
 
 #### Firewall Rule
-- **Inbound Rule**: Allow HTTPS (port 443) traffic from User PC to Web App Server and IdP Server.
-- **Outbound Rule**: Allow HTTPS (port 443) traffic from Web App Server to IdP Server for token exchange.
-- **Purpose**: Secures communication for OIDC authentication flows.
+- **User to Web App Rule**: Allow HTTPS (port 443) traffic from User PC through Firewall to Web App Server.
+- **Web App to IdP Rule**: Allow HTTPS (port 443) traffic from Web App Server through Firewall to IdP Server for token exchange.
+- **User to IdP Rule**: Allow HTTPS (port 443) traffic from User PC through Firewall to IdP Server for direct authentication.
+- **Purpose**: Enforces micro-segmentation within the internal network to enhance security by controlling traffic between different segments, even within the trusted zone.
 
 #### Onboarding Information
 - **Client ID**: Unique identifier for the application registered with the IdP.
@@ -109,13 +117,13 @@ graph TD
     UserPC -->|HTTPS| IdPServer
     IdPServer -->|SAML over HTTPS| SaaSServer
 ```
-**Description**: User traffic goes through the firewall to the Internet, reaching the SaaS server, which communicates with the internal IdP (via VPN or public endpoint) for SAML-based authentication.
+**Description**: User traffic goes through the firewall to the Internet, crossing from the trusted internal zone to the untrusted Internet zone, reaching the SaaS server. The SaaS server communicates with the internal IdP (via VPN or public endpoint) for SAML-based authentication. The firewall marks the boundary between trusted and untrusted zones.
 
 #### Firewall Rule
-- **Inbound Rule**: Allow HTTPS (port 443) traffic from User PC to Internet and IdP Server.
-- **Outbound Rule**: Allow HTTPS (port 443) traffic to SaaS Server and from SaaS Server to IdP Server (if public endpoint used).
-- **VPN Consideration**: If IdP is not publicly accessible, ensure VPN tunnel allows SaaS to IdP communication.
-- **Purpose**: Facilitates secure access to external SaaS while protecting internal IdP communications.
+- **Inbound Rule**: Allow HTTPS (port 443) traffic from User PC through Firewall to Internet for SaaS access and direct to IdP Server within internal zone.
+- **Outbound Rule**: Allow HTTPS (port 443) traffic through Firewall to SaaS Server and from SaaS Server to IdP Server (if public endpoint used).
+- **VPN Consideration**: If IdP is not publicly accessible, ensure VPN tunnel allows SaaS to IdP communication through the firewall.
+- **Purpose**: Facilitates secure access to external SaaS by enforcing security at the boundary between trusted internal and untrusted Internet zones while protecting internal IdP communications.
 
 #### Onboarding Information
 - **Entity ID**: Unique identifier for the SaaS SP.
