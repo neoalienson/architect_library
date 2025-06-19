@@ -143,6 +143,16 @@ List of controls that web application or SaaS must implement, with validation pa
 - **Token Validation**: Web app/SaaS must validate token signatures and expiration before granting access. Validated by Cybersecurity team via penetration testing.
 - **TLS Enforcement**: All communications must use TLS 1.2 or above. Validated by Network team during setup and periodic scans.
 - **User Session Management**: Web app/SaaS must invalidate sessions on logout or token expiry. Validated by IdP team through test logins.
+- **Token Lifetime Management**: Define default token lifetimes and criteria for optimization to balance security and user experience. Default lifetimes are proposed as:
+  - **Access Tokens**: 10 minutes, to minimize exposure if stolen (aligned with control C034 for short lifetimes).
+  - **Refresh Tokens**: 24 hours, to reduce user re-authentication frequency while enforcing periodic checks (relevant for OIDC in Pattern 2).
+  Criteria for optimizing token lifetimes include:
+  - **Application Sensitivity**: Shorter lifetimes for high-sensitivity applications (e.g., financial systems) to reduce risk of unauthorized access.
+  - **User Experience**: Longer lifetimes for low-sensitivity, high-frequency use applications to minimize authentication prompts.
+  - **Threat Environment**: Adjust lifetimes based on current threat intelligence; shorten during heightened risk periods.
+  - **Operational Constraints**: Consider IdP and application server load; shorter lifetimes may increase token refresh requests, impacting performance.
+  - **Regulatory Requirements**: Ensure compliance with data protection regulations that may dictate maximum token validity periods.
+  Validated by Cybersecurity team during security reviews to ensure alignment with organizational risk posture.
 - **Attribute Mapping**: Ensure correct mapping of IdP attributes and group memberships to app roles/permissions as detailed in the Role Mapping Strategy below. Validated by App team during integration testing.
 - **Role Mapping Strategy**: Define a strategy for mapping IdP attributes (claims) and group memberships to application roles, prioritizing groups for scalability in enterprise environments like Microsoft Active Directory. Groups should be the primary mechanism for role assignments due to ease of management and consistent permissions across members. Attributes complement group-based mapping for fine-grained or dynamic access control. This includes:
   - Identifying required attributes (e.g., email, role, department) and groups during onboarding.
